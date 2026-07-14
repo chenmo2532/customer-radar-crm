@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>客户价值雷达 CRM</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div id="login" class="login-shell">
+    <form class="login-card" id="login-form">
+      <div class="mark"></div>
+      <h1>客户价值雷达 CRM</h1>
+      <p>登录后管理客户画像、雷达评分、销售跟进和客户分层。</p>
+      <label>账号<input name="account" value="admin" autocomplete="username" required /></label>
+      <label>密码<input name="password" value="admin123" type="password" autocomplete="current-password" required /></label>
+      <button class="btn primary" type="submit">登录系统</button>
+      <div class="hint">演示账号：admin / admin123，销售账号：linchen / 123456</div>
+      <div class="error" id="login-error"></div>
+    </form>
+  </div>
+
+  <div id="app" class="app hidden">
+    <aside>
+      <div class="brand"><span class="mark small"></span><span>客户价值雷达 CRM</span></div>
+      <nav>
+        <button class="nav active" data-view="dashboard">▣ 仪表盘</button>
+        <button class="nav" data-view="customers">◎ 客户管理</button>
+        <button class="nav" data-view="followups">✎ 销售跟进</button>
+        <button class="nav" data-view="segments">▤ 分层看板</button>
+      </nav>
+      <div class="user-box">
+        <strong id="user-name"></strong>
+        <span id="user-role"></span>
+        <button class="btn" id="logout">退出</button>
+      </div>
+    </aside>
+
+    <main>
+      <header>
+        <div>
+          <h1 id="title">仪表盘</h1>
+          <p id="subtitle">自动识别客户价值、跟进优先级和流失风险。</p>
+        </div>
+        <div class="actions">
+          <button class="btn" id="refresh">刷新</button>
+          <button class="btn primary" id="open-customer">新增客户</button>
+        </div>
+      </header>
+
+      <section id="dashboard" class="view">
+        <div class="stats">
+          <article><span>客户总数</span><strong id="stat-total">0</strong></article>
+          <article><span>A 类重点</span><strong id="stat-a">0</strong></article>
+          <article><span>今日需跟进</span><strong id="stat-due">0</strong></article>
+          <article><span>高风险客户</span><strong id="stat-risk">0</strong></article>
+        </div>
+        <div class="two-col">
+          <section class="panel">
+            <div class="panel-head"><h2>重点客户排行</h2></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>客户</th><th>阶段</th><th>负责人</th><th>评分</th><th>分层</th></tr></thead>
+                <tbody id="top-customers"></tbody>
+              </table>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><h2>销售漏斗与风险</h2></div>
+            <div id="funnel" class="funnel"></div>
+            <div id="risk-list" class="list compact"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="customers" class="view hidden">
+        <div class="two-col wide-left">
+          <section class="panel">
+            <div class="panel-head"><h2>客户列表</h2></div>
+            <div class="filters">
+              <input id="search" placeholder="搜索客户、行业、标签" />
+              <select id="tier-filter"><option value="">全部分层</option><option>A</option><option>B</option><option>C</option><option>D</option></select>
+              <select id="stage-filter"><option value="">全部阶段</option><option>新线索</option><option>已联系</option><option>需求确认</option><option>报价中</option><option>成交</option><option>暂缓</option></select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>客户画像</th><th>阶段</th><th>预算</th><th>下次跟进</th><th>评分</th><th>操作</th></tr></thead>
+                <tbody id="customer-table"></tbody>
+              </table>
+            </div>
+          </section>
+          <section class="stack">
+            <article class="panel" id="detail"></article>
+            <article class="panel">
+              <div class="panel-head"><h2>记录跟进</h2></div>
+              <form id="follow-form" class="form-grid">
+                <select name="customerId" class="full"></select>
+                <select name="method"><option>电话</option><option>微信</option><option>拜访</option><option>会议</option><option>邮件</option></select>
+                <select name="result"><option>有意向</option><option>需求确认</option><option>报价中</option><option>成交</option><option>暂缓</option><option>无效</option></select>
+                <textarea name="content" class="full" placeholder="客户反馈、异议、下一步动作" required></textarea>
+                <input type="date" name="nextFollowUp" required />
+                <button class="btn primary" type="submit">保存跟进</button>
+              </form>
+            </article>
+          </section>
+        </div>
+      </section>
+
+      <section id="followups" class="view hidden">
+        <div class="two-col">
+          <section class="panel"><div class="panel-head"><h2>跟进时间线</h2></div><div class="list" id="followup-list"></div></section>
+          <section class="panel"><div class="panel-head"><h2>优先跟进</h2></div><div class="list" id="priority-list"></div></section>
+        </div>
+      </section>
+
+      <section id="segments" class="view hidden">
+        <section class="panel">
+          <div class="panel-head"><h2>客户分层看板</h2></div>
+          <div class="board" id="board"></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="customer-dialog">
+    <form id="customer-form" class="dialog-body">
+      <div class="panel-head"><h2>新增客户</h2><button type="button" class="btn" id="close-customer">关闭</button></div>
+      <div class="form-grid">
+        <input name="name" placeholder="客户名称" required />
+        <input name="industry" placeholder="行业" required />
+        <input name="region" placeholder="地区" required />
+        <input name="owner" placeholder="负责人" required />
+        <select name="stage"><option>新线索</option><option>已联系</option><option>需求确认</option><option>报价中</option><option>成交</option><option>暂缓</option></select>
+        <input name="budget" type="number" min="0" placeholder="年预算，万元" required />
+        <input name="contact" placeholder="联系人 / 职位" required />
+        <input name="phone" placeholder="联系方式" required />
+        <input name="source" placeholder="客户来源" required />
+        <input name="tags" placeholder="标签，用逗号分隔" required />
+        <input name="nextFollowUp" type="date" required />
+        <input name="lastFollowUp" type="date" required />
+        <input name="value" type="number" min="0" max="100" placeholder="客户价值 0-100" required />
+        <input name="intent" type="number" min="0" max="100" placeholder="成交意向 0-100" required />
+        <input name="activity" type="number" min="0" max="100" placeholder="活跃度 0-100" required />
+        <input name="relationship" type="number" min="0" max="100" placeholder="关系深度 0-100" required />
+        <input name="payment" type="number" min="0" max="100" placeholder="回款健康 0-100" required />
+        <input name="riskControl" type="number" min="0" max="100" placeholder="风险控制 0-100" required />
+      </div>
+      <div class="actions end"><button type="submit" class="btn primary">保存客户</button></div>
+    </form>
+  </dialog>
+
+  <script src="/app.js"></script>
+</body>
+</html>
