@@ -1,0 +1,12 @@
+{
+  "name": "customer-radar-crm",
+  "pages_build_output_dir": "./public",
+  "compatibility_date": "2026-07-16",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "customer-radar-crm-db",
+      "database_id": "ec0d9133-6fdf-45b1-8b6c-36583949fcd7"
+    }
+  ]
+}
