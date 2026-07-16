@@ -1,0 +1,1178 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>客户价值雷达 CRM</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #151a23;
+      --muted: #667085;
+      --line: #d9dee7;
+      --brand: #0f766e;
+      --brand-2: #155e75;
+      --accent: #eab308;
+      --danger: #dc2626;
+      --good: #16a34a;
+      --blue: #2563eb;
+      --orange: #ea580c;
+      --shadow: 0 12px 30px rgba(15, 23, 42, .08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "PingFang SC", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr);
+    }
+
+    aside {
+      background: #111827;
+      color: #f9fafb;
+      padding: 22px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 19px;
+      margin-bottom: 26px;
+    }
+
+    .logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: conic-gradient(from 180deg, #14b8a6, #facc15, #2563eb, #14b8a6);
+      position: relative;
+    }
+
+    .logo::after {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      background: #111827;
+    }
+
+    nav {
+      display: grid;
+      gap: 6px;
+    }
+
+    .nav-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 11px 12px;
+      color: #cbd5e1;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      text-align: left;
+    }
+
+    .nav-btn.active, .nav-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, .1);
+    }
+
+    .nav-icon {
+      width: 18px;
+      text-align: center;
+      font-size: 15px;
+    }
+
+    main {
+      min-width: 0;
+      padding: 22px 28px 38px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 26px; letter-spacing: 0; }
+    h2 { font-size: 18px; }
+    h3 { font-size: 15px; }
+
+    .subtle { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink);
+      padding: 9px 12px;
+      min-height: 38px;
+    }
+
+    .btn.primary {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    .btn.ghost {
+      background: transparent;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .stats {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .metric, .panel, .customer-card, .column, .timeline-item {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .metric { padding: 16px; }
+    .metric .value { font-size: 29px; font-weight: 800; margin-top: 8px; }
+    .metric .trend { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(360px, .85fr);
+      gap: 16px;
+      margin-top: 16px;
+      align-items: start;
+    }
+
+    .panel { padding: 18px; }
+    .panel-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) 140px 140px 120px;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 9px 10px;
+      background: #fff;
+      color: var(--ink);
+      min-height: 38px;
+    }
+
+    textarea { resize: vertical; min-height: 86px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 12px 10px;
+      border-bottom: 1px solid #edf0f5;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      background: #fafbfc;
+    }
+
+    tr:hover td { background: #f8fafc; }
+
+    .name-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 170px;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 5px;
+    }
+
+    .tag, .tier, .stage {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .tag { background: #eef2ff; color: #3730a3; }
+    .stage { background: #ecfeff; color: #155e75; }
+    .tier-a { background: #dcfce7; color: #166534; }
+    .tier-b { background: #dbeafe; color: #1d4ed8; }
+    .tier-c { background: #fef3c7; color: #92400e; }
+    .tier-d { background: #fee2e2; color: #991b1b; }
+
+    .score {
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    .score-bar {
+      margin-top: 5px;
+      height: 7px;
+      background: #e5e7eb;
+      border-radius: 99px;
+      overflow: hidden;
+      width: 92px;
+    }
+
+    .score-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--brand), var(--accent));
+    }
+
+    .detail {
+      display: grid;
+      gap: 16px;
+    }
+
+    .profile-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      background: #e0f2fe;
+      color: var(--brand-2);
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      flex: 0 0 auto;
+    }
+
+    .profile-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .profile-title h2 {
+      overflow-wrap: anywhere;
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .kv div {
+      padding: 10px;
+      background: #f8fafc;
+      border: 1px solid #edf0f5;
+      border-radius: 7px;
+      min-width: 0;
+    }
+
+    .kv span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .radar-wrap {
+      display: grid;
+      place-items: center;
+      padding: 6px 0 0;
+    }
+
+    canvas {
+      width: min(100%, 340px);
+      aspect-ratio: 1;
+      max-height: 340px;
+    }
+
+    .suggestions {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .suggestion {
+      border-left: 4px solid var(--brand);
+      background: #f0fdfa;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 10px;
+      max-height: 360px;
+      overflow: auto;
+      padding-right: 3px;
+    }
+
+    .timeline-item {
+      box-shadow: none;
+      padding: 12px;
+    }
+
+    .timeline-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 7px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .form-grid .wide { grid-column: 1 / -1; }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(220px, 1fr));
+      gap: 14px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .column {
+      padding: 12px;
+      box-shadow: none;
+      min-height: 360px;
+    }
+
+    .column-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .customer-card {
+      padding: 12px;
+      box-shadow: none;
+      margin-bottom: 10px;
+    }
+
+    .customer-card .meta {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    .funnel {
+      display: grid;
+      gap: 9px;
+    }
+
+    .funnel-row {
+      display: grid;
+      grid-template-columns: 88px minmax(0, 1fr) 36px;
+      gap: 10px;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .funnel-track {
+      height: 11px;
+      border-radius: 99px;
+      background: #e5e7eb;
+      overflow: hidden;
+    }
+
+    .funnel-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: var(--blue);
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 1080px) {
+      .app { grid-template-columns: 1fr; }
+      aside {
+        position: static;
+        height: auto;
+        padding: 14px;
+      }
+      .brand { margin-bottom: 12px; }
+      nav {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+      .nav-btn {
+        justify-content: center;
+        padding: 10px 8px;
+      }
+      .nav-btn span:last-child { display: none; }
+      main { padding: 18px; }
+      .layout { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      header { align-items: flex-start; flex-direction: column; }
+      .toolbar, .form-grid, .kv { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: 1fr; }
+      table { min-width: 760px; }
+      .table-scroll { overflow-x: auto; }
+      main { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <span class="logo" aria-hidden="true"></span>
+        <span>客户价值雷达 CRM</span>
+      </div>
+      <nav aria-label="主导航">
+        <button class="nav-btn active" data-view="dashboard" title="仪表盘"><span class="nav-icon">▣</span><span>仪表盘</span></button>
+        <button class="nav-btn" data-view="customers" title="客户管理"><span class="nav-icon">◎</span><span>客户管理</span></button>
+        <button class="nav-btn" data-view="followups" title="销售跟进"><span class="nav-icon">✎</span><span>销售跟进</span></button>
+        <button class="nav-btn" data-view="segments" title="分层看板"><span class="nav-icon">▤</span><span>分层看板</span></button>
+      </nav>
+    </aside>
+
+    <main>
+      <header>
+        <div>
+          <h1 id="page-title">仪表盘</h1>
+          <p class="subtle" id="page-subtitle">按客户价值、成交意向、活跃度、关系深度、回款健康和风险控制自动评分。</p>
+        </div>
+        <div class="actions">
+          <button class="btn" id="reset-demo" title="恢复示例数据">↻ 恢复示例</button>
+          <button class="btn primary" id="quick-add" title="新增客户">＋ 新增客户</button>
+        </div>
+      </header>
+
+      <section id="dashboard" class="view">
+        <div class="grid stats">
+          <div class="metric">
+            <h3>客户总数</h3>
+            <div class="value" id="stat-total">0</div>
+            <div class="trend">全部线索与客户</div>
+          </div>
+          <div class="metric">
+            <h3>A 类重点客户</h3>
+            <div class="value" id="stat-a">0</div>
+            <div class="trend">80 分以上，优先拜访</div>
+          </div>
+          <div class="metric">
+            <h3>今日需跟进</h3>
+            <div class="value" id="stat-due">0</div>
+            <div class="trend">到期或超期任务</div>
+          </div>
+          <div class="metric">
+            <h3>高风险客户</h3>
+            <div class="value" id="stat-risk">0</div>
+            <div class="trend">风险控制分低于 45</div>
+          </div>
+        </div>
+
+        <div class="layout">
+          <div class="panel">
+            <div class="panel-title">
+              <h2>重点客户排行</h2>
+              <button class="btn ghost" data-view-jump="customers">查看全部</button>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>客户</th>
+                    <th>阶段</th>
+                    <th>负责人</th>
+                    <th>评分</th>
+                    <th>分层</th>
+                  </tr>
+                </thead>
+                <tbody id="top-customers"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="panel">
+              <div class="panel-title">
+                <h2>销售阶段漏斗</h2>
+              </div>
+              <div class="funnel" id="funnel"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-title">
+                <h2>风险提醒</h2>
+              </div>
+              <div id="risk-list" class="timeline"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="customers" class="view hidden">
+        <div class="layout">
+          <div class="panel">
+            <div class="panel-title">
+              <h2>客户列表</h2>
+              <button class="btn primary" id="add-customer">＋ 新增</button>
+            </div>
+            <div class="toolbar">
+              <input id="search" placeholder="搜索客户、行业、标签" />
+              <select id="filter-tier">
+                <option value="">全部分层</option>
+                <option value="A">A 类客户</option>
+                <option value="B">B 类客户</option>
+                <option value="C">C 类客户</option>
+                <option value="D">D 类客户</option>
+              </select>
+              <select id="filter-stage">
+                <option value="">全部阶段</option>
+                <option>新线索</option>
+                <option>已联系</option>
+                <option>需求确认</option>
+                <option>报价中</option>
+                <option>成交</option>
+                <option>暂缓</option>
+              </select>
+              <select id="sort-by">
+                <option value="score">评分排序</option>
+                <option value="nextFollowUp">跟进时间</option>
+                <option value="budget">预算排序</option>
+              </select>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>客户画像</th>
+                    <th>阶段</th>
+                    <th>预算</th>
+                    <th>下次跟进</th>
+                    <th>评分</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="customer-table"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="detail">
+            <div class="panel" id="customer-detail"></div>
+            <div class="panel">
+              <div class="panel-title">
+                <h2>新增销售跟进</h2>
+              </div>
+              <form id="follow-form" class="form-grid">
+                <select name="customerId" class="wide" required></select>
+                <select name="method" required>
+                  <option>电话</option>
+                  <option>微信</option>
+                  <option>拜访</option>
+                  <option>会议</option>
+                  <option>邮件</option>
+                </select>
+                <select name="result" required>
+                  <option>有意向</option>
+                  <option>需求确认</option>
+                  <option>报价中</option>
+                  <option>成交</option>
+                  <option>暂缓</option>
+                  <option>无效</option>
+                </select>
+                <textarea name="content" class="wide" placeholder="记录客户反馈、异议、下一步动作" required></textarea>
+                <input type="date" name="nextFollowUp" required />
+                <button class="btn primary" type="submit">保存跟进</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="followups" class="view hidden">
+        <div class="layout">
+          <div class="panel">
+            <div class="panel-title">
+              <h2>销售跟进时间线</h2>
+              <button class="btn primary" data-view-jump="customers">＋ 记录跟进</button>
+            </div>
+            <div id="all-followups" class="timeline"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">
+              <h2>跟进优先级</h2>
+            </div>
+            <div id="priority-list" class="timeline"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="segments" class="view hidden">
+        <div class="panel">
+          <div class="panel-title">
+            <h2>客户分层看板</h2>
+            <span class="subtle">A 重点跟进，B 持续培育，C 低频维护，D 重新判断。</span>
+          </div>
+          <div class="board" id="segment-board"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="customer-dialog">
+    <form id="customer-form" method="dialog" class="panel" style="width:min(720px,92vw); box-shadow:none;">
+      <div class="panel-title">
+        <h2>新增客户</h2>
+        <button class="btn" value="cancel" type="button" id="close-dialog">×</button>
+      </div>
+      <div class="form-grid">
+        <input name="name" placeholder="客户名称" required />
+        <input name="industry" placeholder="行业" required />
+        <input name="region" placeholder="地区" required />
+        <input name="owner" placeholder="负责人" required />
+        <select name="stage">
+          <option>新线索</option>
+          <option>已联系</option>
+          <option>需求确认</option>
+          <option>报价中</option>
+          <option>成交</option>
+          <option>暂缓</option>
+        </select>
+        <input name="budget" type="number" min="0" placeholder="年预算，万元" required />
+        <input name="contact" placeholder="联系人 / 职位" required />
+        <input name="phone" placeholder="联系方式" required />
+        <input name="source" placeholder="客户来源" required />
+        <input name="tags" placeholder="标签，用逗号分隔" required />
+        <input name="nextFollowUp" type="date" required />
+        <input name="lastFollowUp" type="date" required />
+        <input name="value" type="number" min="0" max="100" placeholder="客户价值 0-100" required />
+        <input name="intent" type="number" min="0" max="100" placeholder="成交意向 0-100" required />
+        <input name="activity" type="number" min="0" max="100" placeholder="活跃度 0-100" required />
+        <input name="relationship" type="number" min="0" max="100" placeholder="关系深度 0-100" required />
+        <input name="payment" type="number" min="0" max="100" placeholder="回款健康 0-100" required />
+        <input name="riskControl" type="number" min="0" max="100" placeholder="风险控制 0-100" required />
+      </div>
+      <div class="actions" style="justify-content:flex-end; margin-top:14px;">
+        <button class="btn" type="button" id="cancel-customer">取消</button>
+        <button class="btn primary" type="submit">保存客户</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    const today = new Date("2026-07-14T00:00:00+08:00");
+    const weights = { value: .25, intent: .25, activity: .15, relationship: .15, payment: .10, riskControl: .10 };
+    const dims = [
+      ["value", "客户价值"],
+      ["intent", "成交意向"],
+      ["activity", "活跃度"],
+      ["relationship", "关系深度"],
+      ["payment", "回款健康"],
+      ["riskControl", "风险控制"]
+    ];
+
+    const seed = {
+      selectedId: "c1",
+      customers: [
+        {
+          id: "c1", name: "杭州云帆智造有限公司", industry: "智能制造", region: "浙江杭州", owner: "林晨",
+          stage: "报价中", budget: 280, contact: "周总 / 采购负责人", phone: "138-0000-1024", source: "展会线索",
+          tags: ["高预算", "老板关注", "本月决策"], nextFollowUp: "2026-07-15", lastFollowUp: "2026-07-12",
+          scores: { value: 92, intent: 86, activity: 78, relationship: 82, payment: 74, riskControl: 68 }
+        },
+        {
+          id: "c2", name: "上海瑞禾连锁商业集团", industry: "连锁零售", region: "上海", owner: "许诺",
+          stage: "需求确认", budget: 190, contact: "李经理 / 数字化负责人", phone: "136-0000-8848", source: "老客户转介绍",
+          tags: ["多门店", "流程复杂", "需方案"], nextFollowUp: "2026-07-14", lastFollowUp: "2026-07-10",
+          scores: { value: 82, intent: 76, activity: 88, relationship: 70, payment: 80, riskControl: 73 }
+        },
+        {
+          id: "c3", name: "苏州科启医疗器械", industry: "医疗器械", region: "江苏苏州", owner: "林晨",
+          stage: "已联系", budget: 85, contact: "王主任 / 运营", phone: "139-0000-2211", source: "官网咨询",
+          tags: ["价格敏感", "需教育", "竞品对比"], nextFollowUp: "2026-07-16", lastFollowUp: "2026-07-06",
+          scores: { value: 58, intent: 62, activity: 55, relationship: 48, payment: 66, riskControl: 52 }
+        },
+        {
+          id: "c4", name: "广州越海供应链", industry: "物流供应链", region: "广东广州", owner: "赵言",
+          stage: "暂缓", budget: 130, contact: "陈总 / 总经理", phone: "137-0000-9090", source: "渠道推荐",
+          tags: ["项目暂停", "竞品介入", "需高层维护"], nextFollowUp: "2026-07-13", lastFollowUp: "2026-06-21",
+          scores: { value: 76, intent: 44, activity: 30, relationship: 64, payment: 58, riskControl: 28 }
+        },
+        {
+          id: "c5", name: "成都锦澜教育科技", industry: "教育科技", region: "四川成都", owner: "许诺",
+          stage: "新线索", budget: 45, contact: "唐老师 / 校区负责人", phone: "135-0000-3312", source: "短视频投放",
+          tags: ["新线索", "待确认", "预算较低"], nextFollowUp: "2026-07-18", lastFollowUp: "2026-07-11",
+          scores: { value: 42, intent: 48, activity: 60, relationship: 35, payment: 52, riskControl: 61 }
+        },
+        {
+          id: "c6", name: "宁波诚远汽配贸易", industry: "汽车配件", region: "浙江宁波", owner: "赵言",
+          stage: "成交", budget: 160, contact: "马总 / 老板", phone: "133-0000-6742", source: "老客户复购",
+          tags: ["已成交", "复购机会", "回款稳定"], nextFollowUp: "2026-07-21", lastFollowUp: "2026-07-09",
+          scores: { value: 78, intent: 82, activity: 70, relationship: 88, payment: 92, riskControl: 84 }
+        }
+      ],
+      followups: [
+        { id: "f1", customerId: "c1", date: "2026-07-12", method: "会议", result: "报价中", content: "客户确认 3 个部门参与试点，要求补充实施排期和售后响应承诺。" },
+        { id: "f2", customerId: "c2", date: "2026-07-10", method: "电话", result: "需求确认", content: "客户希望先看门店经营数据看板案例，下周安排方案演示。" },
+        { id: "f3", customerId: "c4", date: "2026-06-21", method: "微信", result: "暂缓", content: "客户反馈预算审批暂停，竞品给出低价方案，需要高层重新建立价值感。" },
+        { id: "f4", customerId: "c6", date: "2026-07-09", method: "拜访", result: "成交", content: "已签首期合同，客户对复购库存预测模块感兴趣。" }
+      ]
+    };
+
+    let state = loadState();
+
+    function loadState() {
+      const saved = localStorage.getItem("customerRadarCrm");
+      return saved ? JSON.parse(saved) : structuredClone(seed);
+    }
+
+    function saveState() {
+      localStorage.setItem("customerRadarCrm", JSON.stringify(state));
+    }
+
+    function calcScore(customer) {
+      return Math.round(Object.entries(weights).reduce((sum, [key, weight]) => sum + customer.scores[key] * weight, 0));
+    }
+
+    function tier(score) {
+      if (score >= 80) return "A";
+      if (score >= 60) return "B";
+      if (score >= 40) return "C";
+      return "D";
+    }
+
+    function tierLabel(t) {
+      return `<span class="tier tier-${t.toLowerCase()}">${t} 类</span>`;
+    }
+
+    function daysUntil(dateText) {
+      const d = new Date(dateText + "T00:00:00+08:00");
+      return Math.ceil((d - today) / 86400000);
+    }
+
+    function customerById(id) {
+      return state.customers.find(c => c.id === id);
+    }
+
+    function render() {
+      renderStats();
+      renderDashboard();
+      renderCustomers();
+      renderDetail();
+      renderFollowForms();
+      renderFollowups();
+      renderSegments();
+      saveState();
+    }
+
+    function renderStats() {
+      const scored = state.customers.map(c => ({ ...c, total: calcScore(c), tier: tier(calcScore(c)) }));
+      document.querySelector("#stat-total").textContent = state.customers.length;
+      document.querySelector("#stat-a").textContent = scored.filter(c => c.tier === "A").length;
+      document.querySelector("#stat-due").textContent = scored.filter(c => daysUntil(c.nextFollowUp) <= 0).length;
+      document.querySelector("#stat-risk").textContent = scored.filter(c => c.scores.riskControl < 45).length;
+    }
+
+    function customerRow(c) {
+      const score = calcScore(c);
+      const t = tier(score);
+      return `
+        <tr>
+          <td>
+            <div class="name-cell">
+              <strong>${c.name}</strong>
+              <span class="subtle">${c.industry} · ${c.region} · ${c.contact}</span>
+              <span class="tag-row">${c.tags.map(tag => `<span class="tag">${tag}</span>`).join("")}</span>
+            </div>
+          </td>
+          <td><span class="stage">${c.stage}</span></td>
+          <td>${c.budget} 万</td>
+          <td>${c.nextFollowUp}</td>
+          <td>
+            <div class="score">${score}</div>
+            <div class="score-bar"><div class="score-fill" style="width:${score}%"></div></div>
+          </td>
+          <td><button class="btn" data-select="${c.id}">查看</button></td>
+        </tr>
+      `;
+    }
+
+    function renderDashboard() {
+      const sorted = [...state.customers].sort((a, b) => calcScore(b) - calcScore(a));
+      document.querySelector("#top-customers").innerHTML = sorted.slice(0, 5).map(c => `
+        <tr>
+          <td><strong>${c.name}</strong><div class="subtle">${c.industry} · ${c.region}</div></td>
+          <td><span class="stage">${c.stage}</span></td>
+          <td>${c.owner}</td>
+          <td><strong>${calcScore(c)}</strong></td>
+          <td>${tierLabel(tier(calcScore(c)))}</td>
+        </tr>
+      `).join("");
+
+      const stages = ["新线索", "已联系", "需求确认", "报价中", "成交", "暂缓"];
+      const max = Math.max(...stages.map(s => state.customers.filter(c => c.stage === s).length), 1);
+      document.querySelector("#funnel").innerHTML = stages.map(s => {
+        const count = state.customers.filter(c => c.stage === s).length;
+        return `<div class="funnel-row"><span>${s}</span><div class="funnel-track"><div class="funnel-fill" style="width:${count / max * 100}%"></div></div><strong>${count}</strong></div>`;
+      }).join("");
+
+      const risks = sorted.filter(c => c.scores.riskControl < 60 || daysUntil(c.nextFollowUp) < 0).slice(0, 5);
+      document.querySelector("#risk-list").innerHTML = risks.length ? risks.map(c => `
+        <div class="timeline-item">
+          <div class="timeline-top"><strong>${c.name}</strong><span>${tierLabel(tier(calcScore(c)))}</span></div>
+          <p>${riskText(c)}</p>
+        </div>
+      `).join("") : `<p class="subtle">暂无高风险提醒。</p>`;
+    }
+
+    function renderCustomers() {
+      const q = document.querySelector("#search").value.trim().toLowerCase();
+      const ft = document.querySelector("#filter-tier").value;
+      const fs = document.querySelector("#filter-stage").value;
+      const sortBy = document.querySelector("#sort-by").value;
+
+      let list = state.customers.filter(c => {
+        const hay = [c.name, c.industry, c.region, c.owner, c.stage, ...c.tags].join(" ").toLowerCase();
+        return (!q || hay.includes(q)) && (!ft || tier(calcScore(c)) === ft) && (!fs || c.stage === fs);
+      });
+
+      list.sort((a, b) => {
+        if (sortBy === "budget") return b.budget - a.budget;
+        if (sortBy === "nextFollowUp") return daysUntil(a.nextFollowUp) - daysUntil(b.nextFollowUp);
+        return calcScore(b) - calcScore(a);
+      });
+
+      document.querySelector("#customer-table").innerHTML = list.map(customerRow).join("");
+      document.querySelectorAll("[data-select]").forEach(btn => btn.addEventListener("click", () => {
+        state.selectedId = btn.dataset.select;
+        showView("customers");
+        render();
+      }));
+    }
+
+    function renderDetail() {
+      const c = customerById(state.selectedId) || state.customers[0];
+      if (!c) return;
+      state.selectedId = c.id;
+      const score = calcScore(c);
+      const t = tier(score);
+      document.querySelector("#customer-detail").innerHTML = `
+        <div class="profile-head">
+          <div class="profile-title">
+            <div class="avatar">${c.name.slice(0, 2)}</div>
+            <div>
+              <h2>${c.name}</h2>
+              <p class="subtle">${c.industry} · ${c.region} · ${c.source}</p>
+              <div class="tag-row">${tierLabel(t)} <span class="stage">${c.stage}</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="score">${score}</div>
+            <div class="subtle">综合评分</div>
+          </div>
+        </div>
+        <div class="kv">
+          <div><span>负责人</span><strong>${c.owner}</strong></div>
+          <div><span>年预算</span><strong>${c.budget} 万</strong></div>
+          <div><span>联系人</span><strong>${c.contact}</strong></div>
+          <div><span>联系方式</span><strong>${c.phone}</strong></div>
+          <div><span>最近跟进</span><strong>${c.lastFollowUp}</strong></div>
+          <div><span>下次跟进</span><strong>${c.nextFollowUp}</strong></div>
+        </div>
+        <div class="radar-wrap"><canvas id="radar" width="380" height="380"></canvas></div>
+        <div class="suggestions">${suggestions(c).map(s => `<div class="suggestion">${s}</div>`).join("")}</div>
+      `;
+      drawRadar(c);
+    }
+
+    function drawRadar(c) {
+      const canvas = document.querySelector("#radar");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const r = 126;
+      ctx.clearRect(0, 0, w, h);
+      ctx.lineWidth = 1;
+      ctx.font = "13px Microsoft YaHei, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      for (let ring = 1; ring <= 5; ring++) {
+        ctx.beginPath();
+        dims.forEach((_, i) => {
+          const p = point(cx, cy, r * ring / 5, i, dims.length);
+          i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y);
+        });
+        ctx.closePath();
+        ctx.strokeStyle = "#d9dee7";
+        ctx.stroke();
+      }
+
+      dims.forEach(([, label], i) => {
+        const p = point(cx, cy, r, i, dims.length);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(p.x, p.y);
+        ctx.strokeStyle = "#e5e7eb";
+        ctx.stroke();
+        const lp = point(cx, cy, r + 34, i, dims.length);
+        ctx.fillStyle = "#475569";
+        ctx.fillText(label, lp.x, lp.y);
+      });
+
+      ctx.beginPath();
+      dims.forEach(([key], i) => {
+        const p = point(cx, cy, r * c.scores[key] / 100, i, dims.length);
+        i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y);
+      });
+      ctx.closePath();
+      ctx.fillStyle = "rgba(15, 118, 110, .22)";
+      ctx.strokeStyle = "#0f766e";
+      ctx.lineWidth = 3;
+      ctx.fill();
+      ctx.stroke();
+
+      dims.forEach(([key], i) => {
+        const p = point(cx, cy, r * c.scores[key] / 100, i, dims.length);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "#eab308";
+        ctx.fill();
+        ctx.fillStyle = "#111827";
+        const sp = point(cx, cy, r * c.scores[key] / 100 + 17, i, dims.length);
+        ctx.fillText(c.scores[key], sp.x, sp.y);
+      });
+    }
+
+    function point(cx, cy, r, index, total) {
+      const angle = -Math.PI / 2 + Math.PI * 2 * index / total;
+      return { x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r };
+    }
+
+    function suggestions(c) {
+      const result = [];
+      const score = calcScore(c);
+      if (score >= 80) result.push("建议本周安排高层拜访，围绕预算、决策链和签约时间推进。");
+      if (c.scores.intent < 60) result.push("成交意向偏弱，下一次跟进应确认痛点、预算和是否有明确上线时间。");
+      if (c.scores.activity < 55) result.push("活跃度不足，建议设置 3 天内触达任务，避免线索冷却。");
+      if (c.scores.riskControl < 45) result.push("流失风险较高，需要复盘竞品、价格异议和项目暂停原因。");
+      if (c.scores.relationship < 55) result.push("关系深度不足，建议补充关键决策人和使用部门联系人。");
+      if (!result.length) result.push("客户状态健康，保持节奏跟进并推动下一步明确动作。");
+      return result;
+    }
+
+    function riskText(c) {
+      const due = daysUntil(c.nextFollowUp);
+      if (c.scores.riskControl < 45) return "风险控制分偏低，可能存在竞品、预算暂停或决策延迟。";
+      if (due < 0) return `已超期 ${Math.abs(due)} 天未跟进，建议立即联系。`;
+      return "近期需要关注阶段推进，避免报价后无反馈。";
+    }
+
+    function renderFollowForms() {
+      const options = state.customers.map(c => `<option value="${c.id}" ${c.id === state.selectedId ? "selected" : ""}>${c.name}</option>`).join("");
+      document.querySelector("[name='customerId']").innerHTML = options;
+      const next = new Date(today);
+      next.setDate(next.getDate() + 3);
+      document.querySelector("[name='nextFollowUp']").value ||= next.toISOString().slice(0, 10);
+    }
+
+    function renderFollowups() {
+      const sorted = [...state.followups].sort((a, b) => b.date.localeCompare(a.date));
+      document.querySelector("#all-followups").innerHTML = sorted.map(f => {
+        const c = customerById(f.customerId);
+        return `<div class="timeline-item">
+          <div class="timeline-top"><strong>${c ? c.name : "未知客户"}</strong><span>${f.date} · ${f.method} · ${f.result}</span></div>
+          <p>${f.content}</p>
+        </div>`;
+      }).join("");
+
+      const priority = [...state.customers].sort((a, b) => {
+        const aRank = (daysUntil(a.nextFollowUp) <= 0 ? 100 : 0) + (100 - a.scores.riskControl) + calcScore(a) / 10;
+        const bRank = (daysUntil(b.nextFollowUp) <= 0 ? 100 : 0) + (100 - b.scores.riskControl) + calcScore(b) / 10;
+        return bRank - aRank;
+      }).slice(0, 6);
+
+      document.querySelector("#priority-list").innerHTML = priority.map(c => `
+        <div class="timeline-item">
+          <div class="timeline-top"><strong>${c.name}</strong><span>${c.nextFollowUp}</span></div>
+          <p>${riskText(c)}</p>
+        </div>
+      `).join("");
+    }
+
+    function renderSegments() {
+      const groups = { A: [], B: [], C: [], D: [] };
+      state.customers.forEach(c => groups[tier(calcScore(c))].push(c));
+      const titles = { A: "A 类重点", B: "B 类培育", C: "C 类维护", D: "D 类观察" };
+      document.querySelector("#segment-board").innerHTML = Object.entries(groups).map(([t, list]) => `
+        <div class="column">
+          <div class="column-head"><h3>${titles[t]}</h3>${tierLabel(t)}</div>
+          ${list.sort((a,b) => calcScore(b) - calcScore(a)).map(c => `
+            <div class="customer-card">
+              <strong>${c.name}</strong>
+              <div class="meta">${c.industry} · ${c.owner}<br>评分 ${calcScore(c)} · 下次跟进 ${c.nextFollowUp}</div>
+              <div class="tag-row">${c.tags.slice(0, 2).map(tag => `<span class="tag">${tag}</span>`).join("")}</div>
+            </div>
+          `).join("") || `<p class="subtle">暂无客户</p>`}
+        </div>
+      `).join("");
+    }
+
+    function showView(id) {
+      document.querySelectorAll(".view").forEach(v => v.classList.toggle("hidden", v.id !== id));
+      document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.view === id));
+      const map = {
+        dashboard: ["仪表盘", "按客户价值、成交意向、活跃度、关系深度、回款健康和风险控制自动评分。"],
+        customers: ["客户管理", "维护客户画像，查看雷达评分，并快速记录销售跟进。"],
+        followups: ["销售跟进", "按时间线沉淀沟通记录，并自动识别优先跟进客户。"],
+        segments: ["客户分层看板", "用 A/B/C/D 分层安排销售精力和管理动作。"]
+      };
+      document.querySelector("#page-title").textContent = map[id][0];
+      document.querySelector("#page-subtitle").textContent = map[id][1];
+      if (id === "customers") setTimeout(() => drawRadar(customerById(state.selectedId)), 0);
+    }
+
+    document.querySelectorAll(".nav-btn").forEach(btn => btn.addEventListener("click", () => showView(btn.dataset.view)));
+    document.querySelectorAll("[data-view-jump]").forEach(btn => btn.addEventListener("click", () => showView(btn.dataset.viewJump)));
+    ["search", "filter-tier", "filter-stage", "sort-by"].forEach(id => document.querySelector("#" + id).addEventListener("input", renderCustomers));
+
+    document.querySelector("#follow-form").addEventListener("submit", e => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target));
+      const c = customerById(data.customerId);
+      state.followups.push({ id: "f" + Date.now(), customerId: data.customerId, date: today.toISOString().slice(0, 10), method: data.method, result: data.result, content: data.content });
+      c.lastFollowUp = today.toISOString().slice(0, 10);
+      c.nextFollowUp = data.nextFollowUp;
+      c.stage = data.result === "有意向" ? c.stage : data.result;
+      c.scores.activity = Math.min(100, c.scores.activity + 12);
+      if (["需求确认", "报价中", "成交"].includes(data.result)) c.scores.intent = Math.min(100, c.scores.intent + 8);
+      if (data.method === "拜访" || data.method === "会议") c.scores.relationship = Math.min(100, c.scores.relationship + 6);
+      if (data.result === "暂缓") c.scores.riskControl = Math.max(0, c.scores.riskControl - 12);
+      if (data.result === "成交") c.scores.payment = Math.min(100, c.scores.payment + 8);
+      e.target.reset();
+      state.selectedId = c.id;
+      render();
+    });
+
+    function openCustomerDialog() {
+      document.querySelector("#customer-dialog").showModal();
+    }
+
+    document.querySelector("#quick-add").addEventListener("click", openCustomerDialog);
+    document.querySelector("#add-customer").addEventListener("click", openCustomerDialog);
+    document.querySelector("#close-dialog").addEventListener("click", () => document.querySelector("#customer-dialog").close());
+    document.querySelector("#cancel-customer").addEventListener("click", () => document.querySelector("#customer-dialog").close());
+
+    document.querySelector("#customer-form").addEventListener("submit", e => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target));
+      const customer = {
+        id: "c" + Date.now(),
+        name: data.name,
+        industry: data.industry,
+        region: data.region,
+        owner: data.owner,
+        stage: data.stage,
+        budget: Number(data.budget),
+        contact: data.contact,
+        phone: data.phone,
+        source: data.source,
+        tags: data.tags.split(/[，,]/).map(s => s.trim()).filter(Boolean),
+        nextFollowUp: data.nextFollowUp,
+        lastFollowUp: data.lastFollowUp,
+        scores: {
+          value: Number(data.value),
+          intent: Number(data.intent),
+          activity: Number(data.activity),
+          relationship: Number(data.relationship),
+          payment: Number(data.payment),
+          riskControl: Number(data.riskControl)
+        }
+      };
+      state.customers.unshift(customer);
+      state.selectedId = customer.id;
+      e.target.reset();
+      document.querySelector("#customer-dialog").close();
+      showView("customers");
+      render();
+    });
+
+    document.querySelector("#reset-demo").addEventListener("click", () => {
+      localStorage.removeItem("customerRadarCrm");
+      state = structuredClone(seed);
+      showView("dashboard");
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
