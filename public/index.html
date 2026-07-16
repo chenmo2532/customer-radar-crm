@@ -11,11 +11,11 @@
     <form class="login-card" id="login-form">
       <div class="mark"></div>
       <h1>客户价值雷达 CRM</h1>
-      <p>登录后管理客户画像、雷达评分、销售跟进和客户分层。</p>
+      <p>云端管理版：客户资料、跟进记录和账号权限统一保存在数据库。</p>
       <label>账号<input name="account" value="admin" autocomplete="username" required /></label>
       <label>密码<input name="password" value="admin123" type="password" autocomplete="current-password" required /></label>
       <button class="btn primary" type="submit">登录系统</button>
-      <div class="hint">演示账号：admin / admin123，销售账号：linchen / 123456</div>
+      <div class="hint">管理员：admin / admin123。登录后请尽快修改默认密码。</div>
       <div class="error" id="login-error"></div>
     </form>
   </div>
@@ -28,6 +28,7 @@
         <button class="nav" data-view="customers">◎ 客户管理</button>
         <button class="nav" data-view="followups">✎ 销售跟进</button>
         <button class="nav" data-view="segments">▤ 分层看板</button>
+        <button class="nav admin-only hidden" data-view="accounts">⚙ 账号管理</button>
       </nav>
       <div class="user-box">
         <strong id="user-name"></strong>
@@ -118,6 +119,31 @@
           <div class="panel-head"><h2>客户分层看板</h2></div>
           <div class="board" id="board"></div>
         </section>
+      </section>
+
+      <section id="accounts" class="view hidden">
+        <div class="two-col">
+          <section class="panel">
+            <div class="panel-head"><h2>子账号列表</h2></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>姓名</th><th>账号</th><th>角色</th><th>创建时间</th></tr></thead>
+                <tbody id="account-table"></tbody>
+              </table>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><h2>创建子账号</h2></div>
+            <form id="account-form" class="form-grid">
+              <input name="name" placeholder="姓名，例如：张三" required />
+              <input name="account" placeholder="登录账号，例如：zhangsan" required />
+              <input name="password" type="password" placeholder="初始密码，至少 6 位" required />
+              <select name="role"><option>销售</option><option>销售主管</option></select>
+              <button class="btn primary full" type="submit">创建账号</button>
+              <div class="hint full" id="account-message"></div>
+            </form>
+          </section>
+        </div>
       </section>
     </main>
   </div>

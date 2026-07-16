@@ -21,6 +21,8 @@ export async function onRequest(context) {
     if (path === "state" && method === "GET") return state(context, user);
     if (path === "customers" && method === "POST") return createCustomer(context, user);
     if (path === "followups" && method === "POST") return createFollowup(context, user);
+    if (path === "users" && method === "GET") return listUsers(context, user);
+    if (path === "users" && method === "POST") return createUser(context, user);
 
     return json({ error: "接口不存在" }, 404);
   } catch (error) {
@@ -68,8 +70,22 @@ async function currentUser({ request, env }) {
 }
 
 async function state({ env }, user) {
-  const customersResult = await env.DB.prepare("SELECT * FROM customers ORDER BY created_at DESC").all();
-  const followupsResult = await env.DB.prepare("SELECT * FROM followups ORDER BY followup_date DESC, created_at DESC").all();
+  const isAdmin = isAdminUser(user);
+  const customersResult = isAdmin
+    ? await env.DB.prepare("SELECT * FROM customers ORDER BY created_at DESC").all()
+    : await env.DB.prepare("SELECT * FROM customers WHERE created_by = ? OR owner = ? ORDER BY created_at DESC")
+      .bind(user.id, user.name).all();
+
+  const followupsResult = isAdmin
+    ? await env.DB.prepare("SELECT followups.* FROM followups ORDER BY followup_date DESC, created_at DESC").all()
+    : await env.DB.prepare(`
+        SELECT followups.*
+        FROM followups
+        JOIN customers ON customers.id = followups.customer_id
+        WHERE customers.created_by = ? OR customers.owner = ?
+        ORDER BY followups.followup_date DESC, followups.created_at DESC
+      `).bind(user.id, user.name).all();
+
   return json({
     user,
     customers: customersResult.results.map(mapCustomer),
@@ -87,8 +103,8 @@ async function createCustomer({ request, env }, user) {
     INSERT INTO customers (
       id, name, industry, region, owner, stage, budget, contact, phone, source, tags,
       next_follow_up, last_follow_up, score_value, score_intent, score_activity,
-      score_relationship, score_payment, score_risk_control
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      score_relationship, score_payment, score_risk_control, created_by
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     id,
     input.name || "",
@@ -108,7 +124,8 @@ async function createCustomer({ request, env }, user) {
     clamp(input.activity),
     clamp(input.relationship),
     clamp(input.payment),
-    clamp(input.riskControl)
+    clamp(input.riskControl),
+    user.id
   ).run();
 
   const customer = await env.DB.prepare("SELECT * FROM customers WHERE id = ?").bind(id).first();
@@ -119,6 +136,9 @@ async function createFollowup({ request, env }, user) {
   const input = await request.json();
   const customer = await env.DB.prepare("SELECT * FROM customers WHERE id = ?").bind(input.customerId || "").first();
   if (!customer) return json({ error: "客户不存在" }, 404);
+  if (!isAdminUser(user) && customer.created_by !== user.id && customer.owner !== user.name) {
+    return json({ error: "无权操作该客户" }, 403);
+  }
 
   const id = crypto.randomUUID();
   const date = new Date().toISOString().slice(0, 10);
@@ -148,6 +168,31 @@ async function createFollowup({ request, env }, user) {
   return json({ followup: { id, customerId: input.customerId, date, method, result, content: input.content || "", owner: user.name } }, 201);
 }
 
+async function listUsers({ env }, user) {
+  if (!isAdminUser(user)) return json({ error: "只有管理员可以管理账号" }, 403);
+  const result = await env.DB.prepare("SELECT id, name, account, role, created_at FROM users ORDER BY created_at DESC").all();
+  return json({ users: result.results });
+}
+
+async function createUser({ request, env }, user) {
+  if (!isAdminUser(user)) return json({ error: "只有管理员可以创建子账号" }, 403);
+  const input = await request.json();
+  const account = String(input.account || "").trim();
+  const name = String(input.name || "").trim();
+  const password = String(input.password || "").trim();
+  const role = String(input.role || "销售").trim();
+  if (!account || !name || !password) return json({ error: "姓名、账号和密码不能为空" }, 400);
+  if (password.length < 6) return json({ error: "密码至少 6 位" }, 400);
+
+  const exists = await env.DB.prepare("SELECT id FROM users WHERE account = ?").bind(account).first();
+  if (exists) return json({ error: "账号已存在" }, 409);
+
+  const id = crypto.randomUUID();
+  await env.DB.prepare("INSERT INTO users (id, name, account, password_hash, role) VALUES (?, ?, ?, ?, ?)")
+    .bind(id, name, account, await sha256(password), role).run();
+  return json({ user: { id, name, account, role } }, 201);
+}
+
 function mapCustomer(row) {
   const customer = {
     id: row.id,
@@ -155,6 +200,7 @@ function mapCustomer(row) {
     industry: row.industry,
     region: row.region,
     owner: row.owner,
+    createdBy: row.created_by || "",
     stage: row.stage,
     budget: row.budget,
     contact: row.contact,
@@ -198,6 +244,10 @@ function tier(score) {
   if (score >= 60) return "B";
   if (score >= 40) return "C";
   return "D";
+}
+
+function isAdminUser(user) {
+  return user?.role === "管理员" || user?.role === "admin";
 }
 
 function clamp(value) {

@@ -2,15 +2,17 @@ const state = {
   user: null,
   customers: [],
   followups: [],
+  users: [],
   selectedId: null,
   view: "dashboard"
 };
 
 const titles = {
-  dashboard: ["仪表盘", "自动识别客户价值、跟进优先级和流失风险。"],
+  dashboard: ["仪表盘", "管理员看全部数据；子账号只看自己创建或负责的客户。"],
   customers: ["客户管理", "维护客户画像，查看雷达评分，并快速记录销售跟进。"],
   followups: ["销售跟进", "沉淀沟通记录，自动提升活跃度和成交意向。"],
-  segments: ["客户分层看板", "A 重点跟进，B 持续培育，C 低频维护，D 重新判断。"]
+  segments: ["客户分层看板", "A 重点跟进，B 持续培育，C 低频维护，D 重新判断。"],
+  accounts: ["账号管理", "管理员创建子账号；子账号登录后只能看到自己的客户资料。"]
 };
 
 const dims = [
@@ -24,6 +26,10 @@ const dims = [
 
 function $(selector) {
   return document.querySelector(selector);
+}
+
+function isAdmin() {
+  return state.user?.role === "管理员" || state.user?.role === "admin";
 }
 
 async function api(path, options = {}) {
@@ -56,13 +62,14 @@ function customerById(id) {
 }
 
 function showView(view) {
+  if (view === "accounts" && !isAdmin()) return;
   state.view = view;
-  $(".view:not(.hidden)")?.classList.add("hidden");
-  $("#" + view).classList.remove("hidden");
+  document.querySelectorAll(".view").forEach(section => section.classList.toggle("hidden", section.id !== view));
   document.querySelectorAll(".nav").forEach(button => button.classList.toggle("active", button.dataset.view === view));
   $("#title").textContent = titles[view][0];
   $("#subtitle").textContent = titles[view][1];
   if (view === "customers") setTimeout(() => drawRadar(customerById(state.selectedId)), 0);
+  if (view === "accounts") loadUsers();
 }
 
 async function loadState() {
@@ -70,13 +77,16 @@ async function loadState() {
   state.user = data.user;
   state.customers = data.customers;
   state.followups = data.followups;
-  state.selectedId ||= state.customers[0]?.id;
+  state.selectedId = state.customers.some(customer => customer.id === state.selectedId)
+    ? state.selectedId
+    : state.customers[0]?.id;
   render();
 }
 
 function render() {
   $("#user-name").textContent = state.user.name;
   $("#user-role").textContent = state.user.role;
+  document.querySelectorAll(".admin-only").forEach(el => el.classList.toggle("hidden", !isAdmin()));
   renderStats();
   renderDashboard();
   renderCustomers();
@@ -102,7 +112,7 @@ function renderDashboard() {
       <td><strong>${customer.score}</strong></td>
       <td>${tierBadge(customer.tier)}</td>
     </tr>
-  `).join("");
+  `).join("") || `<tr><td colspan="5">暂无客户</td></tr>`;
 
   const stages = ["新线索", "已联系", "需求确认", "报价中", "成交", "暂缓"];
   const max = Math.max(...stages.map(stage => state.customers.filter(customer => customer.stage === stage).length), 1);
@@ -121,7 +131,7 @@ function renderCustomers() {
   const keyword = $("#search").value.trim().toLowerCase();
   const tier = $("#tier-filter").value;
   const stage = $("#stage-filter").value;
-  let list = state.customers.filter(customer => {
+  const list = state.customers.filter(customer => {
     const haystack = [customer.name, customer.industry, customer.region, customer.owner, customer.stage, ...customer.tags].join(" ").toLowerCase();
     return (!keyword || haystack.includes(keyword)) && (!tier || customer.tier === tier) && (!stage || customer.stage === stage);
   }).sort((a, b) => b.score - a.score);
@@ -141,7 +151,7 @@ function renderCustomers() {
       <td><div class="score">${customer.score}</div><div class="bar"><div class="fill" style="width:${customer.score}%"></div></div></td>
       <td><button class="btn" data-select="${customer.id}">查看</button></td>
     </tr>
-  `).join("");
+  `).join("") || `<tr><td colspan="6">暂无客户，点击右上角新增客户。</td></tr>`;
 
   document.querySelectorAll("[data-select]").forEach(button => {
     button.addEventListener("click", () => {
@@ -156,7 +166,10 @@ function renderCustomers() {
 
 function renderDetail() {
   const customer = customerById(state.selectedId) || state.customers[0];
-  if (!customer) return;
+  if (!customer) {
+    $("#detail").innerHTML = `<h2>暂无客户</h2><p class="subtle">新增客户后可查看画像和雷达评分。</p>`;
+    return;
+  }
   state.selectedId = customer.id;
   $("#detail").innerHTML = `
     <div class="profile-head">
@@ -235,13 +248,13 @@ function renderFollowups() {
   $("#followup-list").innerHTML = state.followups.map(followup => {
     const customer = customerById(followup.customerId);
     return `<div class="item"><div class="item-top"><strong>${customer?.name || "未知客户"}</strong><span>${followup.date} · ${followup.method} · ${followup.result}</span></div><p>${followup.content}</p></div>`;
-  }).join("");
+  }).join("") || `<p class="subtle">暂无跟进记录。</p>`;
 
   $("#priority-list").innerHTML = [...state.customers].sort((a, b) => {
     const pa = (daysUntil(a.nextFollowUp) <= 0 ? 100 : 0) + (100 - a.scores.riskControl) + a.score / 10;
     const pb = (daysUntil(b.nextFollowUp) <= 0 ? 100 : 0) + (100 - b.scores.riskControl) + b.score / 10;
     return pb - pa;
-  }).slice(0, 6).map(customer => `<div class="item"><div class="item-top"><strong>${customer.name}</strong><span>${customer.nextFollowUp}</span></div><p>${riskText(customer)}</p></div>`).join("");
+  }).slice(0, 6).map(customer => `<div class="item"><div class="item-top"><strong>${customer.name}</strong><span>${customer.nextFollowUp}</span></div><p>${riskText(customer)}</p></div>`).join("") || `<p class="subtle">暂无客户。</p>`;
 }
 
 function renderSegments() {
@@ -259,6 +272,15 @@ function renderSegments() {
         </div>
       `).join("") || `<p class="subtle">暂无客户</p>`}
     </div>
+  `).join("");
+}
+
+async function loadUsers() {
+  if (!isAdmin()) return;
+  const data = await api("/api/users");
+  state.users = data.users;
+  $("#account-table").innerHTML = state.users.map(user => `
+    <tr><td>${user.name}</td><td>${user.account}</td><td>${user.role}</td><td>${user.created_at || ""}</td></tr>
   `).join("");
 }
 
@@ -294,7 +316,10 @@ $("#logout").addEventListener("click", async () => {
 
 document.querySelectorAll(".nav").forEach(button => button.addEventListener("click", () => showView(button.dataset.view)));
 $("#refresh").addEventListener("click", loadState);
-$("#open-customer").addEventListener("click", () => $("#customer-dialog").showModal());
+$("#open-customer").addEventListener("click", () => {
+  $("#customer-form").owner.value = state.user.name;
+  $("#customer-dialog").showModal();
+});
 $("#close-customer").addEventListener("click", () => $("#customer-dialog").close());
 ["search", "tier-filter", "stage-filter"].forEach(id => $("#" + id).addEventListener("input", renderCustomers));
 
@@ -315,6 +340,20 @@ $("#follow-form").addEventListener("submit", async event => {
   await api("/api/followups", { method: "POST", body: JSON.stringify(body) });
   event.target.reset();
   await loadState();
+});
+
+$("#account-form").addEventListener("submit", async event => {
+  event.preventDefault();
+  $("#account-message").textContent = "";
+  try {
+    const body = Object.fromEntries(new FormData(event.target));
+    await api("/api/users", { method: "POST", body: JSON.stringify(body) });
+    event.target.reset();
+    $("#account-message").textContent = "子账号已创建。";
+    await loadUsers();
+  } catch (error) {
+    $("#account-message").textContent = error.message;
+  }
 });
 
 init().catch(error => {

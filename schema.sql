@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS customers (
   score_relationship INTEGER NOT NULL DEFAULT 50,
   score_payment INTEGER NOT NULL DEFAULT 50,
   score_risk_control INTEGER NOT NULL DEFAULT 50,
+  created_by TEXT DEFAULT 'u1',
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
@@ -52,6 +53,7 @@ CREATE TABLE IF NOT EXISTS followups (
 );
 
 CREATE INDEX IF NOT EXISTS idx_customers_owner ON customers(owner);
+CREATE INDEX IF NOT EXISTS idx_customers_created_by ON customers(created_by);
 CREATE INDEX IF NOT EXISTS idx_customers_stage ON customers(stage);
 CREATE INDEX IF NOT EXISTS idx_customers_next_follow_up ON customers(next_follow_up);
 CREATE INDEX IF NOT EXISTS idx_followups_customer_id ON followups(customer_id);
