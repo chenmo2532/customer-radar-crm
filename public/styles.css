@@ -94,6 +94,8 @@ h1 { font-size: 26px; }
 h2 { font-size: 18px; }
 .actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .actions.end { justify-content: flex-end; margin-top: 14px; }
+.row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.profile-actions { display: flex; align-items: flex-start; gap: 14px; text-align: right; }
 .btn {
   border: 1px solid var(--line);
   background: #fff;
@@ -103,6 +105,7 @@ h2 { font-size: 18px; }
   min-height: 38px;
 }
 .btn.primary { color: #fff; background: var(--brand); border-color: var(--brand); }
+.btn.danger { color: #fff; background: var(--danger); border-color: var(--danger); }
 input, select, textarea {
   width: 100%;
   min-height: 38px;
@@ -112,6 +115,7 @@ input, select, textarea {
   padding: 9px 10px;
 }
 textarea { resize: vertical; min-height: 84px; }
+.csv-box { min-height: 240px; margin-top: 12px; font-family: Consolas, "Microsoft YaHei", monospace; }
 .stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -179,14 +183,17 @@ canvas { width: min(100%, 320px); aspect-ratio: 1; display: block; margin: 12px 
   padding: 12px;
   background: #fff;
 }
+.alert-item { border-color: #fecaca; background: #fff7f7; }
 .item-top { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 12px; margin-bottom: 6px; }
 .funnel { display: grid; gap: 9px; }
-.funnel-row { display: grid; grid-template-columns: 86px minmax(0, 1fr) 34px; gap: 10px; align-items: center; font-size: 13px; }
+.funnel-row { display: grid; grid-template-columns: 86px minmax(0, 1fr) 34px 46px; gap: 10px; align-items: center; font-size: 13px; }
+.funnel-row em { color: var(--muted); font-style: normal; text-align: right; font-size: 12px; }
 .track { height: 11px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
 .track span { display: block; height: 100%; background: var(--blue); border-radius: inherit; }
 .board { display: grid; grid-template-columns: repeat(4, minmax(220px, 1fr)); gap: 14px; overflow-x: auto; }
 .col { background: #f8fafc; border: 1px solid var(--line); border-radius: 8px; padding: 12px; min-height: 360px; }
 .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 7px; padding: 12px; margin-top: 10px; }
+.report-history { margin-top: 16px; }
 dialog { border: 0; border-radius: 8px; padding: 0; box-shadow: var(--shadow); width: min(760px, 94vw); }
 dialog::backdrop { background: rgba(15, 23, 42, .42); }
 .dialog-body { padding: 18px; }

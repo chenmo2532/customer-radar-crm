@@ -17,10 +17,12 @@ CREATE TABLE IF NOT EXISTS sessions (
 
 CREATE TABLE IF NOT EXISTS customers (
   id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  industry TEXT NOT NULL,
-  region TEXT NOT NULL,
-  owner TEXT NOT NULL,
+  name TEXT NOT NULL DEFAULT '未命名客户',
+  company_name TEXT NOT NULL DEFAULT '',
+  preferred_style TEXT NOT NULL DEFAULT '',
+  industry TEXT NOT NULL DEFAULT '未填写',
+  region TEXT NOT NULL DEFAULT '未填写',
+  owner TEXT NOT NULL DEFAULT '',
   stage TEXT NOT NULL,
   budget INTEGER NOT NULL DEFAULT 0,
   contact TEXT NOT NULL DEFAULT '',
@@ -36,6 +38,7 @@ CREATE TABLE IF NOT EXISTS customers (
   score_payment INTEGER NOT NULL DEFAULT 50,
   score_risk_control INTEGER NOT NULL DEFAULT 50,
   created_by TEXT DEFAULT 'u1',
+  deleted_at TEXT DEFAULT NULL,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
@@ -52,11 +55,35 @@ CREATE TABLE IF NOT EXISTS followups (
   FOREIGN KEY (customer_id) REFERENCES customers(id)
 );
 
+CREATE TABLE IF NOT EXISTS daily_reports (
+  id TEXT PRIMARY KEY,
+  report_date TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  owner TEXT NOT NULL,
+  crm_count INTEGER NOT NULL DEFAULT 0,
+  sample_count INTEGER NOT NULL DEFAULT 0,
+  quote_count INTEGER NOT NULL DEFAULT 0,
+  old_visit_count INTEGER NOT NULL DEFAULT 0,
+  over3_count INTEGER NOT NULL DEFAULT 0,
+  over3_phone_count INTEGER NOT NULL DEFAULT 0,
+  over3_wechat_count INTEGER NOT NULL DEFAULT 0,
+  over3_intent_count INTEGER NOT NULL DEFAULT 0,
+  over3_deal_count INTEGER NOT NULL DEFAULT 0,
+  deal_count INTEGER NOT NULL DEFAULT 0,
+  notes TEXT NOT NULL DEFAULT '',
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(report_date, user_id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_customers_owner ON customers(owner);
 CREATE INDEX IF NOT EXISTS idx_customers_created_by ON customers(created_by);
 CREATE INDEX IF NOT EXISTS idx_customers_stage ON customers(stage);
 CREATE INDEX IF NOT EXISTS idx_customers_next_follow_up ON customers(next_follow_up);
+CREATE INDEX IF NOT EXISTS idx_customers_deleted_at ON customers(deleted_at);
 CREATE INDEX IF NOT EXISTS idx_followups_customer_id ON followups(customer_id);
+CREATE INDEX IF NOT EXISTS idx_daily_reports_date ON daily_reports(report_date);
+CREATE INDEX IF NOT EXISTS idx_daily_reports_user_id ON daily_reports(user_id);
 
 INSERT OR IGNORE INTO users (id, name, account, password_hash, role) VALUES
 ('u1', '管理员', 'admin', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', '管理员'),

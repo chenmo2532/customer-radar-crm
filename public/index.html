@@ -12,10 +12,9 @@
       <div class="mark"></div>
       <h1>客户价值雷达 CRM</h1>
       <p>云端管理版：客户资料、跟进记录和账号权限统一保存在数据库。</p>
-      <label>账号<input name="account" value="admin" autocomplete="username" required /></label>
-      <label>密码<input name="password" value="admin123" type="password" autocomplete="current-password" required /></label>
+      <label>账号<input name="account" autocomplete="username" required /></label>
+      <label>密码<input name="password" type="password" autocomplete="current-password" required /></label>
       <button class="btn primary" type="submit">登录系统</button>
-      <div class="hint">管理员：admin / admin123。登录后请尽快修改默认密码。</div>
       <div class="error" id="login-error"></div>
     </form>
   </div>
@@ -27,6 +26,7 @@
         <button class="nav active" data-view="dashboard">▣ 仪表盘</button>
         <button class="nav" data-view="customers">◎ 客户管理</button>
         <button class="nav" data-view="followups">✎ 销售跟进</button>
+        <button class="nav" data-view="reports">▦ 工作总结</button>
         <button class="nav" data-view="segments">▤ 分层看板</button>
         <button class="nav admin-only hidden" data-view="accounts">⚙ 账号管理</button>
       </nav>
@@ -54,7 +54,17 @@
           <article><span>客户总数</span><strong id="stat-total">0</strong></article>
           <article><span>A 类重点</span><strong id="stat-a">0</strong></article>
           <article><span>今日需跟进</span><strong id="stat-due">0</strong></article>
-          <article><span>高风险客户</span><strong id="stat-risk">0</strong></article>
+          <article><span>漏斗成交率</span><strong id="stat-conversion">0%</strong></article>
+        </div>
+        <div class="two-col">
+          <section class="panel">
+            <div class="panel-head"><h2>今日待办与逾期提醒</h2></div>
+            <div class="list compact" id="todo-list"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><h2>快成交客户</h2></div>
+            <div class="list compact" id="hot-list"></div>
+          </section>
         </div>
         <div class="two-col">
           <section class="panel">
@@ -72,12 +82,34 @@
             <div id="risk-list" class="list compact"></div>
           </section>
         </div>
+        <div class="two-col">
+          <section class="panel">
+            <div class="panel-head"><h2>销售跟进统计</h2></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>销售</th><th>跟进次数</th><th>负责客户</th><th>成交客户</th><th>高频未成交</th></tr></thead>
+                <tbody id="owner-stats"></tbody>
+              </table>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><h2>卡住客户</h2></div>
+            <div class="list compact" id="stalled-list"></div>
+          </section>
+        </div>
       </section>
 
       <section id="customers" class="view hidden">
         <div class="two-col wide-left">
           <section class="panel">
-            <div class="panel-head"><h2>客户列表</h2></div>
+            <div class="panel-head">
+              <h2>客户列表</h2>
+              <div class="actions">
+                <button class="btn" id="export-customers">导出</button>
+                <button class="btn" id="open-import">批量导入</button>
+                <button class="btn" id="open-recycle">回收站</button>
+              </div>
+            </div>
             <div class="filters">
               <input id="search" placeholder="搜索客户、行业、标签" />
               <select id="tier-filter"><option value="">全部分层</option><option>A</option><option>B</option><option>C</option><option>D</option></select>
@@ -110,8 +142,48 @@
       <section id="followups" class="view hidden">
         <div class="two-col">
           <section class="panel"><div class="panel-head"><h2>跟进时间线</h2></div><div class="list" id="followup-list"></div></section>
-          <section class="panel"><div class="panel-head"><h2>优先跟进</h2></div><div class="list" id="priority-list"></div></section>
+          <section class="stack">
+            <article class="panel"><div class="panel-head"><h2>优先跟进</h2></div><div class="list" id="priority-list"></div></article>
+            <article class="panel"><div class="panel-head"><h2>下次联系通知</h2></div><div class="list" id="reminder-list"></div></article>
+          </section>
         </div>
+      </section>
+
+      <section id="reports" class="view hidden">
+        <div class="two-col">
+          <section class="panel">
+            <div class="panel-head"><h2>每日工作总结</h2></div>
+            <form id="report-form" class="form-grid">
+              <input type="date" name="reportDate" />
+              <input name="crmCount" type="number" min="0" placeholder="CRM入库客户" />
+              <input name="sampleCount" type="number" min="0" placeholder="发样客户" />
+              <input name="quoteCount" type="number" min="0" placeholder="跟进样品报价客户" />
+              <input name="oldVisitCount" type="number" min="0" placeholder="老客回访" />
+              <input name="over3Count" type="number" min="0" placeholder="超3个月老客户联系" />
+              <input name="over3PhoneCount" type="number" min="0" placeholder="其中电话联系" />
+              <input name="over3WechatCount" type="number" min="0" placeholder="已加微信" />
+              <input name="over3IntentCount" type="number" min="0" placeholder="意向" />
+              <input name="over3DealCount" type="number" min="0" placeholder="超3个月老客成交" />
+              <input name="dealCount" type="number" min="0" placeholder="成交客户" />
+              <textarea name="notes" class="full" placeholder="补充说明"></textarea>
+              <button class="btn primary full" type="submit">保存今日总结</button>
+              <div class="hint full" id="report-message"></div>
+            </form>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><h2>今日总结预览</h2></div>
+            <div class="list compact" id="today-report-preview"></div>
+          </section>
+        </div>
+        <section class="panel report-history">
+          <div class="panel-head"><h2>历史工作总结</h2></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>日期</th><th>人员</th><th>入库</th><th>发样</th><th>报价</th><th>老客回访</th><th>超3月联系</th><th>电话</th><th>微信</th><th>意向</th><th>老客成交</th><th>成交</th></tr></thead>
+              <tbody id="report-table"></tbody>
+            </table>
+          </div>
+        </section>
       </section>
 
       <section id="segments" class="view hidden">
@@ -127,7 +199,7 @@
             <div class="panel-head"><h2>子账号列表</h2></div>
             <div class="table-wrap">
               <table>
-                <thead><tr><th>姓名</th><th>账号</th><th>角色</th><th>创建时间</th></tr></thead>
+                <thead><tr><th>姓名</th><th>账号</th><th>角色</th><th>创建时间</th><th>操作</th></tr></thead>
                 <tbody id="account-table"></tbody>
               </table>
             </div>
@@ -150,29 +222,50 @@
 
   <dialog id="customer-dialog">
     <form id="customer-form" class="dialog-body">
-      <div class="panel-head"><h2>新增客户</h2><button type="button" class="btn" id="close-customer">关闭</button></div>
+      <input type="hidden" name="id" />
+      <div class="panel-head"><h2 id="customer-dialog-title">新增客户</h2><button type="button" class="btn" id="close-customer">关闭</button></div>
       <div class="form-grid">
-        <input name="name" placeholder="客户名称" required />
-        <input name="industry" placeholder="行业" required />
-        <input name="region" placeholder="地区" required />
-        <input name="owner" placeholder="负责人" required />
+        <input name="name" placeholder="客户名称" />
+        <input name="industry" placeholder="行业" />
+        <input name="region" placeholder="地区" />
+        <input name="owner" placeholder="负责人" />
         <select name="stage"><option>新线索</option><option>已联系</option><option>需求确认</option><option>报价中</option><option>成交</option><option>暂缓</option></select>
-        <input name="budget" type="number" min="0" placeholder="年预算，万元" required />
-        <input name="contact" placeholder="联系人 / 职位" required />
-        <input name="phone" placeholder="联系方式" required />
-        <input name="source" placeholder="客户来源" required />
-        <input name="tags" placeholder="标签，用逗号分隔" required />
-        <input name="nextFollowUp" type="date" required />
-        <input name="lastFollowUp" type="date" required />
-        <input name="value" type="number" min="0" max="100" placeholder="客户价值 0-100" required />
-        <input name="intent" type="number" min="0" max="100" placeholder="成交意向 0-100" required />
-        <input name="activity" type="number" min="0" max="100" placeholder="活跃度 0-100" required />
-        <input name="relationship" type="number" min="0" max="100" placeholder="关系深度 0-100" required />
-        <input name="payment" type="number" min="0" max="100" placeholder="回款健康 0-100" required />
-        <input name="riskControl" type="number" min="0" max="100" placeholder="风险控制 0-100" required />
+        <input name="budget" type="number" min="0" placeholder="年预算，万元" />
+        <input name="contact" placeholder="联系人 / 职位" />
+        <input name="phone" placeholder="联系方式" />
+        <input name="source" placeholder="客户来源" />
+        <input name="tags" placeholder="标签，用逗号分隔" />
+        <input name="nextFollowUp" type="date" />
+        <input name="lastFollowUp" type="date" />
+        <input name="value" type="number" min="0" max="100" placeholder="客户价值 0-100" />
+        <input name="intent" type="number" min="0" max="100" placeholder="成交意向 0-100" />
+        <input name="activity" type="number" min="0" max="100" placeholder="活跃度 0-100" />
+        <input name="relationship" type="number" min="0" max="100" placeholder="关系深度 0-100" />
+        <input name="companyName" placeholder="公司名称" />
+        <input name="preferredStyle" placeholder="意向款式" />
       </div>
-      <div class="actions end"><button type="submit" class="btn primary">保存客户</button></div>
+      <div class="actions end"><button type="submit" class="btn primary" id="customer-submit">保存客户</button></div>
     </form>
+  </dialog>
+
+  <dialog id="import-dialog">
+    <form id="import-form" class="dialog-body">
+      <div class="panel-head"><h2>批量导入客户</h2><button type="button" class="btn" id="close-import">关闭</button></div>
+      <p class="hint">请粘贴 CSV 内容，第一行必须是表头。支持字段：客户名称、公司名称、意向款式、行业、地区、负责人、阶段、年预算万元、联系人、联系方式、客户来源、标签、下次跟进、最近跟进。</p>
+      <textarea name="csv" class="full csv-box" placeholder="客户名称,公司名称,意向款式,联系方式,负责人&#10;张三,上海某公司,连衣裙,13800000000,管理员"></textarea>
+      <div class="hint" id="import-message"></div>
+      <div class="actions end">
+        <button type="button" class="btn" id="download-template">下载模板</button>
+        <button type="submit" class="btn primary">开始导入</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="recycle-dialog">
+    <div class="dialog-body">
+      <div class="panel-head"><h2>客户回收站</h2><button type="button" class="btn" id="close-recycle">关闭</button></div>
+      <div class="list" id="deleted-list"></div>
+    </div>
   </dialog>
 
   <script src="/app.js"></script>
